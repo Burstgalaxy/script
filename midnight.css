@@ -8,6 +8,14 @@
 
     --border-hover: var(--border-subtle);
 
+    /* --- Переменные для совместимости со стилями профиля Tritan --- */
+    --dark-primary: var(--bg-4);
+    --dark-secondary: var(--bg-3);
+    --dark-secondary-alt: var(--bg-2);
+    --dark-bright: var(--bg-2);
+    --brand-experiment: var(--dk-green-2); /* Используем ваш тёмно-зелёный как основной акцент */
+    --popout-activeborders: var(--border-subtle); /* Стандартная рамка из Midnight */
+
     /* --- Переменные для совместимости с RadialStatus --- */
     --rs-online-color: var(--online);
     --rs-idle-color: var(--idle);
@@ -2176,4 +2184,144 @@ body {
 #app-mount .info__2debe .line__2debe:last-child:after {
   content: "RadialStatus " var(--rs-version);
   display: block;
+
+}
+
+/* 
+============================================================
+  СТИЛИ ПРОФИЛЯ (ИНТЕГРАЦИЯ ИЗ TRITAN)
+============================================================
+*/
+
+/* --- Маленький Popout профиля --- */
+.userPopout-2j1gM4 {
+    border: solid var(--popout-activeborders);
+    border-radius: 15px;
+}
+
+.headerTop-3GPUSF {
+    padding-bottom: 10px !important;
+    padding-top: 55px !important;
+}
+
+.headerTopWithCustomStatus-1aNSNd {
+    padding-bottom: 12px !important;
+}
+
+.setIdentityLink-hOFsMl {
+    display: none;
+}
+
+/* --- Большой модальный профиль --- */
+.connectedAccount-1xKpli {
+    background-color: var(--dark-bright);
+    border-radius: 20px;
+}
+
+.connectedAccount-1xKpli:hover {
+    background-color: var(--dark-primary);
+    transition: 250ms;
+}
+
+.connectedAccountName-j0meX4:hover {
+    font-weight: bold;
+    font-size: 110%;
+    transition: 0.2s ease;
+}
+
+.connectedAccountOpenIcon-1yfBsb {
+    opacity: 0;
+    background-color: var(--dark-primary);
+    border: solid var(--popout-activeborders);
+    border-radius: 15px;
+    padding: 5px;
+    color: #000;
+}
+
+.connectedAccount-1xKpli:hover .connectedAccountOpenIcon-1yfBsb {
+    opacity: 1;
+    background-color: var(--brand-experiment);
+    transition: 250ms;
+}
+
+.note-3M15gE textarea {
+    background: var(--dark-secondary);
+    border-radius: 7px;
+}
+
+.tabBarItem-30Te4- {
+    background-color: var(--dark-bright);
+    border-radius: 15px;
+    padding: 2.5%;
+    font-weight: bold;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 15px !important;
+}
+
+.customStatusText-_4TbWr {
+    text-align: center;
+    background-color: var(--dark-secondary);
+    margin-right: 20px;
+    margin-left: 10px;
+    border-radius: 10px;
+    padding: 10px;
+    font-size: 105%;
+}
+
+/* --- Вкладки "Общие серверы" и "Общие друзья" в виде сетки --- */
+.listScroller-entkMk {
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin-top: 10px;
+    display: flex;
+    border-bottom-right-radius: 15px;
+    border-bottom-left-radius: 15px;
+    background-color: var(--dark-primary);
+    padding-bottom: 15px;
+}
+
+.listRow-2nO1T6 {
+    flex-shrink: 1 !important;
+    flex-grow: 1 !important;
+    align-items: center !important;
+    border-radius: 15px !important;
+    margin-left: 20px !important;
+    margin-top: 20px !important;
+    margin-bottom: 5px !important;
+    margin-right: 5px;
+    padding: 10px 20px 10px 10px !important;
+    width: 240px !important;
+    background-color: var(--dark-secondary-alt);
+    transition: background-color 250ms ease-in-out !important;
+}
+
+.listAvatar-2bU5Uh,
+.listRowContent-PEmSWj {
+    margin-left: 15%;
+}
+
+.listAvatar-2bU5Uh {
+    transform: scale(1.12);
+    box-shadow: rgba(0, 0, 0, .21) 0px 7px 29px 0px;
+}
+
+.listRow-2nO1T6:hover {
+    background-color: var(--dark-primary);
+    box-shadow: rgb(21, 21, 21) 0px 0px 0px 2px;
+}
+
+/* --- Центрирование блока с активностью (игра, музыка) --- */
+.body-1Ukv50 .activityProfile-1712BN.userProfileActivity-sal5no {
+    left: 50%;
+    top: 10%;
+    width: 100%;
+    transform: translate(-50%, -10%);
+}
+
+.body-1Ukv50 .button-TGAkj4,
+.body-1Ukv50 .disabledButtonWrapper-3wH6-b {
+    left: 0%;
+    top: 65%;
+    transform: scale(.915);
 }
