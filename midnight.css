@@ -2364,7 +2364,7 @@ body {
 
 /* 
 ============================================================
-  МОД: ГОРИЗОНТАЛЬНЫЙ СПИСОК СЕРВЕРОВ (СНИЗУ) - ИСПРАВЛЕННЫЙ
+  МОД: ГОРИЗОНТАЛЬНЫЙ СПИСОК СЕРВЕРОВ (СНИЗУ) - ФИНАЛЬНОЕ ИСПРАВЛЕНИЕ
 ============================================================
 */
 
@@ -2375,25 +2375,21 @@ body {
   overflow: visible !important;
 }
 
-/* 2. Адаптируем боковую панель */
+/* 2. Адаптируем боковую панель — КЛЮЧЕВОЕ ИЗМЕНЕНИЕ */
 #app-mount .sidebar_c48ade {
   border-radius: 0;
   overflow: visible !important;
+  /* Поднимаем ВСЮ левую колонку (серверы и каналы) на верхний слой */
+  z-index: 100; 
 }
 
-/* 3. Главная магия: поворачиваем и позиционируем список серверов ВНИЗУ */
+/* 3. Поворачиваем и позиционируем список серверов ВНИЗУ */
 #app-mount .guilds_c48ade {
   top: calc(100vh - var(--custom-guild-list-width));
   left: 0;
   bottom: unset;
-
-  /* === КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ === */
-  /* Поднимаем панель на самый верхний слой, чтобы она не пряталась под чатом */
-  z-index: 1002; 
-  
   transform-origin: bottom left; 
   rotate: 90deg;
-  
   height: 100vw !important;
   width: var(--custom-guild-list-width);
   position: absolute !important;
@@ -2420,7 +2416,7 @@ body {
   top: unset;
   bottom: 0;
   pointer-events: none;
-  z-index: 1001; 
+  z-index: 101; /* Должен быть выше, чем z-index у sidebar */
 }
 .container_c48ade > div[style]:not(.base_c48ade) .guilds_c48ade {
   pointer-events: all;
@@ -2428,4 +2424,3 @@ body {
 .container_c48ade > div[style]:not(.base_c48ade) + .base_c48ade .content_c48ade {
   margin-bottom: calc(var(--custom-guild-list-width) * 2);
 }
-
