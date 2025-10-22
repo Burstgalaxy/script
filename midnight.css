@@ -1604,7 +1604,7 @@ body {
 @property --top-bar-button-position {
     syntax: 'off | hide | serverlist | titlebar';
     inherits: false;
-    initial-value: titlebar;
+    initial-value: off;
 }
 
 .platform-osx.visual-refresh .wrapper_ef3116 {
@@ -2357,4 +2357,5 @@ body {
 .notice__6e2b9 .wrapper__44b0c rect {
     display: none !important;
 }
+
 
