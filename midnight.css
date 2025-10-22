@@ -2364,74 +2364,57 @@ body {
 
 /* 
 ============================================================
-  МОД: ВСПЛЫВАЮЩИЙ НИЖНИЙ СПИСОК СЕРВЕРОВ (BSL)
+  МОД: ГОРИЗОНТАЛЬНЫЙ СПИСОК СЕРВЕРОВ (HSL)
 ============================================================
 */
 
-/* 1. Создаем "кнопку"-индикатор над панелью пользователя */
-.panels_c48ade::before {
-    content: '';
-    position: absolute;
-    top: -10px; /* Располагаем чуть выше панели */
-    left: 50%;
-    transform: translateX(-50%);
-    width: 40px;
-    height: 4px;
-    background-color: var(--text-4); /* Серый цвет, как у иконок */
-    border-radius: 2px;
-    opacity: 0.5;
-    transition: opacity 0.2s ease, background-color 0.2s ease;
-    z-index: 1001; /* Поверх всего */
+/* Сдвигаем основной контент вниз, освобождая место для серверов */
+.content_c48ade {
+  margin-top: var(--custom-guild-list-width);
+  overflow: visible !important;
 }
 
-/* При наведении индикатор становится ярче */
-.panels_c48ade:hover::before {
-    opacity: 1;
-    background-color: var(--text-2); /* Светло-серый */
+/* Адаптируем боковую панель */
+#app-mount .sidebar_c48ade {
+  border-radius: 0;
+  overflow: visible !important;
 }
 
-/* 2. Прячем список серверов за экраном и готовим его к анимации */
+/* Главная магия: поворачиваем и позиционируем список серверов */
 #app-mount .guilds_c48ade {
-    position: fixed; /* Фиксируем относительно окна */
-    bottom: var(--custom-app-panels-height); /* Позиция над панелью */
-    left: 0;
-    width: 100vw; /* На всю ширину окна */
-    height: var(--custom-guild-list-width); /* Высота равна ширине иконок */
-    z-index: 1000;
-    
-    /* Изначально скрыт под экраном */
-    transform: translateY(calc(100% + var(--custom-app-panels-height)));
-    opacity: 0.7;
-    
-    /* Отключаем клики, пока скрыт */
-    pointer-events: none;
-    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+  transform-origin: top left;
+  rotate: -90deg;
+  height: 100vw !important; /* Растягиваем на всю ширину окна */
+  width: var(--custom-guild-list-width);
+  position: absolute !important;
+  left: 0;
+  bottom: unset; /* Отменяем стандартное позиционирование */
 }
 
-/* 3. Показываем и анимируем список, когда курсор над панелью пользователя */
-.panels_c48ade:hover + .guilds_c48ade {
-    transform: translateY(0); /* Возвращаем на место */
-    opacity: 1;
-    pointer-events: all; /* Включаем клики */
+/* Поворачиваем иконки серверов обратно, чтобы они стояли прямо */
+#app-mount .wrapper_cc5dd2 {
+  rotate: 90deg;
 }
 
-/* 4. Стили для самих иконок серверов, чтобы они были в ряд */
-#app-mount .scroller_ef3116,
+/* Используем переменные для управления расположением иконок */
 #app-mount .itemsContainer_ef3116,
 #app-mount .stack_dbd263 {
-    display: flex;
-    flex-direction: row !important; /* Всегда в ряд */
-    justify-content: center; /* Выравнивание по центру */
+  flex-direction: var(--HSL-server-direction);
+  justify-content: var(--HSL-server-alignment);
 }
 
-/* Убираем лишние отступы и тени */
-#app-mount .scroller_ef3116 {
-    padding-top: 0 !important;
+/* Исправление для совместимости с папками (BetterFolders) */
+.container_c48ade > div[style]:not(.base_c48ade) {
+  width: 100vw !important;
+  height: var(--custom-guild-list-width) !important;
+  position: absolute;
+  top: calc(var(--custom-guild-list-width) + var(--custom-app-top-bar-height));
+  pointer-events: none;
+  z-index: 1;
 }
-.guilds_c48ade {
-    margin: 0 !important;
-    border: none !important;
+.container_c48ade > div[style]:not(.base_c48ade) .guilds_c48ade {
+  pointer-events: all;
 }
-.wrapper_ef3116 {
-    mask: none !important;
+.container_c48ade > div[style]:not(.base_c48ade) + .base_c48ade .content_c48ade {
+  margin-top: calc(var(--custom-guild-list-width) * 2);
 }
