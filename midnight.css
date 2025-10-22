@@ -2364,63 +2364,63 @@ body {
 
 /* 
 ============================================================
-  МОД: ГОРИЗОНТАЛЬНЫЙ СПИСОК СЕРВЕРОВ (СНИЗУ) - ФИНАЛЬНОЕ ИСПРАВЛЕНИЕ
+  МОД: ГОРИЗОНТАЛЬНЫЙ СПИСОК СЕРВЕРОВ (СНИЗУ) - ЧИСТАЯ ВЕРСИЯ
 ============================================================
 */
 
-/* 1. Создаём отступ снизу для основного контента */
-.content_c48ade {
-  margin-top: 0;
-  margin-bottom: var(--custom-guild-list-width);
-  overflow: visible !important;
+/* 1. Освобождаем место снизу для панели серверов */
+.base_c48ade {
+    margin-bottom: calc(var(--custom-guild-list-width) - var(--gap));
 }
 
-/* 2. Адаптируем боковую панель — КЛЮЧЕВОЕ ИЗМЕНЕНИЕ */
-#app-mount .sidebar_c48ade {
-  border-radius: 0;
-  overflow: visible !important;
-  /* Поднимаем ВСЮ левую колонку (серверы и каналы) на верхний слой */
-  z-index: 100; 
-}
-
-/* 3. Поворачиваем и позиционируем список серверов ВНИЗУ */
+/* 2. Позиционируем панель серверов внизу экрана */
 #app-mount .guilds_c48ade {
-  top: calc(100vh - var(--custom-guild-list-width));
-  left: 0;
-  bottom: unset;
-  transform-origin: bottom left; 
-  rotate: 90deg;
-  height: 100vw !important;
-  width: var(--custom-guild-list-width);
-  position: absolute !important;
+    position: fixed; /* Фиксируем относительно окна */
+    bottom: 0;
+    left: 0;
+    width: 100vw; /* На всю ширину окна */
+    height: var(--custom-guild-list-width);
+    
+    /* Убираем все трансформации и старые стили */
+    transform: none !important;
+    rotate: none !important;
+    
+    /* Устанавливаем самый высокий слой, чтобы панель была над всем */
+    z-index: 1100;
+    
+    /* Добавляем фон, так как панель теперь "плавающая" */
+    background-color: var(--bg-3);
+    border-top: var(--border-thickness) solid var(--border-subtle);
 }
 
-/* 4. Поворачиваем иконки серверов обратно */
-#app-mount .wrapper_cc5dd2 {
-  rotate: -90deg;
+/* 3. Заставляем внутренние элементы выстраиваться горизонтально */
+#app-mount .scroller_f6a7b1 {
+    display: flex;
+    overflow-x: auto; /* Включаем горизонтальную прокрутку */
+    overflow-y: hidden;
 }
 
-/* 5. Используем переменные для управления расположением иконок */
 #app-mount .itemsContainer_ef3116,
 #app-mount .stack_dbd263 {
-  flex-direction: var(--HSL-server-direction);
-  justify-content: var(--HSL-server-alignment);
-  padding: 0 10px;
+    display: flex;
+    flex-direction: row; /* Главное правило: выстроить в ряд */
+    align-items: center; /* Центрируем иконки по вертикали */
+    height: 100%;
 }
 
-/* 6. Исправление для совместимости с папками (BetterFolders) */
-.container_c48ade > div[style]:not(.base_c48ade) {
-  width: 100vw !important;
-  height: var(--custom-guild-list-width) !important;
-  position: absolute;
-  top: unset;
-  bottom: 0;
-  pointer-events: none;
-  z-index: 101; /* Должен быть выше, чем z-index у sidebar */
+/* 4. Возвращаем иконки в нормальное состояние (убираем поворот) */
+#app-mount .wrapper_cc5dd2 {
+    transform: none !important;
+    rotate: none !important;
 }
-.container_c48ade > div[style]:not(.base_c48ade) .guilds_c48ade {
-  pointer-events: all;
+
+/* 5. Добавляем отступы между иконками серверов */
+#app-mount .listItem__48528 {
+    margin: 0 4px;
 }
-.container_c48ade > div[style]:not(.base_c48ade) + .base_c48ade .content_c48ade {
-  margin-bottom: calc(var(--custom-guild-list-width) * 2);
+
+/* 6. Прячем лишние элементы, которые мешают */
+.guilds_c48ade:before, /* Тень */
+.guilds_c48ade:after { /* Еще одна тень */
+    display: none;
 }
