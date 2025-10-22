@@ -38,7 +38,7 @@
 
     /* Добавьте эти две строки в ваш главный :root блок */
     --HSL-server-direction: column;
-    --HSL-server-alignment: center;
+    --HSL-server-alignment: flex-start;
 }
 
 body {
@@ -2364,14 +2364,14 @@ body {
 
 /* 
 ============================================================
-  МОД: ГОРИЗОНТАЛЬНЫЙ СПИСОК СЕРВЕРОВ (СНИЗУ)
+  МОД: ГОРИЗОНТАЛЬНЫЙ СПИСОК СЕРВЕРОВ (СНИЗУ) - ИСПРАВЛЕННЫЙ
 ============================================================
 */
 
-/* 1. Создаём отступ снизу для основного контента, а не сверху */
+/* 1. Создаём отступ снизу для основного контента */
 .content_c48ade {
-  margin-top: 0; /* Убираем верхний отступ */
-  margin-bottom: var(--custom-guild-list-width); /* Добавляем нижний */
+  margin-top: 0;
+  margin-bottom: var(--custom-guild-list-width);
   overflow: visible !important;
 }
 
@@ -2383,14 +2383,16 @@ body {
 
 /* 3. Главная магия: поворачиваем и позиционируем список серверов ВНИЗУ */
 #app-mount .guilds_c48ade {
-  /* Перемещаем панель вниз */
   top: calc(100vh - var(--custom-guild-list-width));
   left: 0;
   bottom: unset;
 
-  /* Меняем точку вращения на нижний левый угол */
+  /* === КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ === */
+  /* Поднимаем панель на самый верхний слой, чтобы она не пряталась под чатом */
+  z-index: 1002; 
+  
   transform-origin: bottom left; 
-  rotate: 90deg; /* Вращаем в другую сторону */
+  rotate: 90deg;
   
   height: 100vw !important;
   width: var(--custom-guild-list-width);
@@ -2399,7 +2401,7 @@ body {
 
 /* 4. Поворачиваем иконки серверов обратно */
 #app-mount .wrapper_cc5dd2 {
-  rotate: -90deg; /* Вращаем в другую сторону */
+  rotate: -90deg;
 }
 
 /* 5. Используем переменные для управления расположением иконок */
@@ -2407,7 +2409,6 @@ body {
 #app-mount .stack_dbd263 {
   flex-direction: var(--HSL-server-direction);
   justify-content: var(--HSL-server-alignment);
-  /* Добавляем небольшой отступ, чтобы иконки не прилипали к краю */
   padding: 0 10px;
 }
 
@@ -2416,11 +2417,10 @@ body {
   width: 100vw !important;
   height: var(--custom-guild-list-width) !important;
   position: absolute;
-  /* Позиционируем относительно низа */
   top: unset;
   bottom: 0;
   pointer-events: none;
-  z-index: 1001; /* Ставим выше, чтобы перекрывать чат */
+  z-index: 1001; 
 }
 .container_c48ade > div[style]:not(.base_c48ade) .guilds_c48ade {
   pointer-events: all;
