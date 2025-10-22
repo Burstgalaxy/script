@@ -1606,11 +1606,11 @@ body {
     inherits: false;
     initial-value: off;
 }
-
+/*
 .platform-osx.visual-refresh .wrapper_ef3116 {
     margin-top: max(0px, calc(36px - var(--top-bar-height)));
 }
-
+*/
 @container body style(--top-bar-button-position: hide) {
     .visual-refresh {
         .trailing_c38106 > a[href="https://support.discord.com"],
@@ -2357,5 +2357,6 @@ body {
 .notice__6e2b9 .wrapper__44b0c rect {
     display: none !important;
 }
+
 
 
