@@ -2325,3 +2325,36 @@ body {
     top: 65%;
     transform: scale(.915);
 }
+
+/* 
+============================================================
+  ИСПРАВЛЕНИЕ ДЛЯ АВАТАРОВ В ЗАГОЛОВКАХ И ПАНЕЛЯХ
+============================================================
+*/
+
+/* 
+  Этот код находит "проблемные" аватарки в заголовке чата и 
+  в панели просмотра от имени роли, а затем отключает для них 
+  все стили RadialStatus, возвращая их к нормальному виду.
+*/
+
+/* Контейнер аватара в заголовке ЛС и панели просмотра */
+.title_f75fb0 .avatar__3889c,
+.container__037ed .avatar__3889c {
+    width: 24px !important;
+    height: 24px !important;
+    transform: none !important;
+}
+
+/* Сама картинка аватара */
+.title_f75fb0 .avatar__3889c img,
+.container__037ed .avatar__3889c img {
+    clip-path: none !important;
+    mask: none !important;
+}
+
+/* Отключаем рамку статуса для этих аватаров */
+.title_f75fb0 .wrapper__44b0c rect,
+.container__037ed .wrapper__44b0c rect {
+    display: none !important;
+}
