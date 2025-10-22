@@ -1900,7 +1900,7 @@ body {
 @property --custom-window-controls {
     syntax: 'off | on';
     inherits: false;
-    initial-value: on;
+    initial-value: off;
 }
 
 @container body style(--custom-window-controls: on) {
@@ -2357,3 +2357,4 @@ body {
 .notice__6e2b9 .wrapper__44b0c rect {
     display: none !important;
 }
+
