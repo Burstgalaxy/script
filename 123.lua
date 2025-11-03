@@ -1,11 +1,17 @@
 --[[
 	Универсальная библиотека ESP (Extra Sensory Perception)
-	Версия: 1.2 (Финальное исправление трассировщиков и боксов)
+	Версия: 1.3 (Интегрирована профессиональная логика трассировщиков через Drawing.new("Line"))
 	Автор: Gemini
 ]]
 
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
+
+-- Проверка, поддерживает ли эксплойт Drawing API
+if not Drawing then
+	warn("ESP Library: Drawing API не найдено. 2D-визуалы (Tracer, Box) не будут работать.")
+	return
+end
 
 local ESP = {}
 ESP.__index = ESP
@@ -17,93 +23,104 @@ local Bin = {}
 Bin.__index = Bin
 function Bin.new() return setmetatable({}, Bin) end
 function Bin:add(item) local node = { item = item }; if not self.head then self.head = node end; if self.tail then self.tail.next = node end; self.tail = node; return item end
-function Bin:destroy() local head = self.head; while head do local item = head.item; if type(item) == "function" then pcall(item) elseif typeof(item) == "RBXScriptConnection" then item:Disconnect() elseif type(item) == "thread" then task.cancel(item) elseif item and typeof(item) == "Instance" then item:Destroy() elseif type(item) == "table" and item.Destroy then item:Destroy() elseif type(item) == "table" and item.destroy then item:destroy() end; head = head.next end; self.head = nil; self.tail = nil end
+function Bin:destroy() local head = self.head; while head do local item = head.item; if type(item) == "function" then pcall(item) elseif typeof(item) == "RBXScriptConnection" then item:Disconnect() elseif type(item) == "thread" then task.cancel(item) elseif item and typeof(item) == "Instance" then item:Destroy() elseif type(item) == "table" and item.Destroy then pcall(item.Destroy, item) elseif type(item) == "table" and item.destroy then pcall(item.destroy, item) elseif type(item) == "table" and item.Remove then pcall(item.Remove, item) end; head = head.next end; self.head = nil; self.tail = nil end
 
 -- /////////////////////////////////////////////////////////////////////////////
 -- // Основной объект ESP
 -- /////////////////////////////////////////////////////////////////////////////
 
 local ESP_OBJECT_COUNTER = 0
-local SCREEN_GUI = (function() pcall(function() if gethui then return gethui() end end); local coreGui = game:GetService("CoreGui"); if coreGui then local existing = coreGui:FindFirstChild("ESPLibraryScreenGui"); if existing then return existing end; local screenGui = Instance.new("ScreenGui"); screenGui.Name = "ESPLibraryScreenGui"; screenGui.ResetOnSpawn = false; screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling; screenGui.Parent = coreGui; return screenGui end; return nil end)()
-
 local function resolveValue(value, ...) if type(value) == "function" then return value(...) end; return value end
 
 function ESP.new(target, options)
-	if not target or not target.Parent or not SCREEN_GUI then return nil end
+	if not target or not target.Parent then return nil end
 	local self = setmetatable({}, ESP); self.Id = ESP_OBJECT_COUNTER; ESP_OBJECT_COUNTER += 1; self.target = target; self.options = options or {}; self.bin = Bin.new(); self.isEnabled = false; self.visuals = {}; self.bin:add(target.AncestryChanged:Connect(function(_, parent) if not parent then self:Destroy() end end)); self:_createVisuals(); self:SetEnabled(resolveValue(self.options.Enabled, self.target) or true); return self
 end
 
 function ESP:_createVisuals()
-	if self.options.Highlight then local config = self.options.Highlight; if resolveValue(config.Enabled, self.target) then local highlight = Instance.new("Highlight"); highlight.Name = "ESP_Highlight_" .. self.Id; highlight.Adornee = self.target; highlight.DepthMode = resolveValue(config.DepthMode, self.target) or Enum.HighlightDepthMode.AlwaysOnTop; highlight.Parent = self.target; self.visuals.Highlight = highlight; self.bin:add(highlight) end end
-	local billboardContainer = Instance.new("BillboardGui"); billboardContainer.Name = "ESP_Container_" .. self.Id; billboardContainer.AlwaysOnTop = true; billboardContainer.LightInfluence = 0; billboardContainer.Size = UDim2.fromOffset(0, 0); billboardContainer.ResetOnSpawn = false; self.visuals.Billboard = billboardContainer; self.bin:add(billboardContainer)
-	if self.options.Label then local config = self.options.Label; if resolveValue(config.Enabled, self.target) then local textLabel = Instance.new("TextLabel"); textLabel.Name = "ESP_Label"; textLabel.BackgroundTransparency = 1; textLabel.Font = resolveValue(config.Font, self.target) or Enum.Font.SourceSans; textLabel.TextSize = resolveValue(config.Size, self.target) or 16; textLabel.TextStrokeTransparency = resolveValue(config.StrokeTransparency, self.target) or 0.5; textLabel.Size = UDim2.new(10, 0, 2, 0); textLabel.TextXAlignment = Enum.TextXAlignment.Center; textLabel.TextYAlignment = Enum.TextYAlignment.Center; textLabel.Parent = billboardContainer; self.visuals.Label = textLabel end end
-	if self.options.Box then local config = self.options.Box; if resolveValue(config.Enabled, self.target) then local boxFrame = Instance.new("Frame"); boxFrame.Name = "ESP_Box"; boxFrame.BackgroundTransparency = 1; boxFrame.BorderSizePixel = 0; boxFrame.Parent = SCREEN_GUI; local border = Instance.new("UIStroke"); border.Name = "ESP_Box_Border"; border.ApplyStrokeMode = Enum.ApplyStrokeMode.Border; self.visuals.BoxBorder = border; border.Parent = boxFrame; self.visuals.Box = boxFrame; self.bin:add(boxFrame) end end
-	if self.options.Tracer then local config = self.options.Tracer; if resolveValue(config.Enabled, self.target) then local tracerFrame = Instance.new("Frame"); tracerFrame.Name = "ESP_Tracer"; tracerFrame.AnchorPoint = Vector2.new(0.5, 0.5); tracerFrame.BorderSizePixel = 0; self.visuals.Tracer = tracerFrame; tracerFrame.Parent = SCREEN_GUI; self.bin:add(tracerFrame) end end
+	-- Highlight (без изменений)
+	if self.options.Highlight then local config = self.options.Highlight; if resolveValue(config.Enabled, self.target) then local highlight = Instance.new("Highlight"); highlight.Name = "ESP_Highlight_"..self.Id; highlight.Adornee = self.target; highlight.DepthMode = resolveValue(config.DepthMode, self.target) or Enum.HighlightDepthMode.AlwaysOnTop; highlight.Parent = self.target; self.visuals.Highlight = highlight; self.bin:add(highlight) end end
+	
+	-- Billboard (Label) (без изменений)
+	if self.options.Label then local billboardContainer = Instance.new("BillboardGui"); billboardContainer.Name = "ESP_Container_"..self.Id; billboardContainer.AlwaysOnTop = true; billboardContainer.LightInfluence = 0; billboardContainer.Size = UDim2.fromOffset(0, 0); billboardContainer.ResetOnSpawn = false; self.visuals.Billboard = billboardContainer; self.bin:add(billboardContainer); local config = self.options.Label; if resolveValue(config.Enabled, self.target) then local textLabel = Instance.new("TextLabel"); textLabel.Name = "ESP_Label"; textLabel.BackgroundTransparency = 1; textLabel.Font = resolveValue(config.Font, self.target) or Enum.Font.SourceSans; textLabel.TextSize = resolveValue(config.Size, self.target) or 16; textLabel.TextStrokeTransparency = resolveValue(config.StrokeTransparency, self.target) or 0.5; textLabel.Size = UDim2.new(10, 0, 2, 0); textLabel.TextXAlignment = Enum.TextXAlignment.Center; textLabel.TextYAlignment = Enum.TextYAlignment.Center; textLabel.Parent = billboardContainer; self.visuals.Label = textLabel end end
+	
+	-- [[ ИЗМЕНЕНО ]] Tracer теперь использует Drawing.new("Line")
+	if self.options.Tracer then
+		local config = self.options.Tracer
+		if resolveValue(config.Enabled, self.target) then
+			local tracerLine = Drawing.new("Line")
+			self.visuals.Tracer = tracerLine
+			self.bin:add(tracerLine) -- Bin автоматически вызовет :Remove() при уничтожении
+		end
+	end
 end
 
 function ESP:SetEnabled(enabled)
 	if self.isEnabled == enabled then return end; self.isEnabled = enabled
-	if enabled then if self.updateConnection then return end; self.updateConnection = RunService.RenderStepped:Connect(function() self:_update() end); self.bin:add(function() if self.updateConnection then self.updateConnection:Disconnect(); self.updateConnection = nil end end) else for _, visual in pairs(self.visuals) do if typeof(visual) == "Instance" then visual.Visible = false end end; if self.visuals.Billboard then self.visuals.Billboard.Parent = nil end; if self.updateConnection then self.updateConnection:Disconnect(); self.updateConnection = nil end end
+	if enabled then if self.updateConnection then return end; self.updateConnection = RunService.RenderStepped:Connect(function() self:_update() end); self.bin:add(function() if self.updateConnection then self.updateConnection:Disconnect(); self.updateConnection = nil end end) else for _, visual in pairs(self.visuals) do if visual and visual.Visible then visual.Visible = false end end; if self.visuals.Billboard then self.visuals.Billboard.Parent = nil end; if self.updateConnection then self.updateConnection:Disconnect(); self.updateConnection = nil end end
 end
 
 function ESP:_update()
 	if not self.target or not self.target.Parent then self:Destroy(); return end
 	local camera = Workspace.CurrentCamera; if not camera then return end
-	
-	-- Улучшенный поиск основной части для всех визуалов
 	local primaryPart = self.target:IsA("Model") and (self.target.PrimaryPart or self.target:FindFirstChild("HumanoidRootPart") or self.target:FindFirstChild("Head")) or (self.target:IsA("BasePart") and self.target);
 	if not primaryPart then self:Destroy(); return end
 	
-	local worldPos = primaryPart.Position; local posVector, onScreen = camera:WorldToViewportPoint(worldPos);
+	local worldPos, onScreen = camera:WorldToViewportPoint(primaryPart.Position);
 	
-	-- Highlight
+	-- Highlight (без изменений)
 	local highlight = self.visuals.Highlight; if highlight then local config = self.options.Highlight; highlight.Enabled = onScreen and (resolveValue(config.Enabled, self.target) or true); if highlight.Enabled then highlight.FillColor = resolveValue(config.Color, self.target) or Color3.new(1,1,1); highlight.FillTransparency = resolveValue(config.FillTransparency, self.target) or 0.8; highlight.OutlineColor = resolveValue(config.OutlineColor, self.target) or Color3.new(1,1,1); highlight.OutlineTransparency = resolveValue(config.OutlineTransparency, self.target) or 0 end end
 	
-	-- Billboard (Label)
-	local billboard = self.visuals.Billboard; if billboard then if onScreen and (self.visuals.Label) then billboard.Adornee = primaryPart; billboard.Parent = self.target else billboard.Parent = nil end end
-	local label = self.visuals.Label; if label and billboard.Parent then local config = self.options.Label; label.Visible = resolveValue(config.Enabled, self.target) or true; if label.Visible then label.TextColor3 = resolveValue(config.Color, self.target) or Color3.new(1,1,1); label.Text = resolveValue(config.Text, self.target) or self.target.Name; local offset = resolveValue(config.Offset, self.target) or Vector3.new(0, primaryPart.Size.Y / 2 + 1.5, 0); billboard.StudsOffset = offset end end
+	-- Label (без изменений)
+	local label = self.visuals.Label; if label then local billboard = self.visuals.Billboard; if onScreen then billboard.Adornee = primaryPart; billboard.Parent = self.target else billboard.Parent = nil end; if billboard.Parent then local config = self.options.Label; label.Visible = resolveValue(config.Enabled, self.target) or true; if label.Visible then label.TextColor3 = resolveValue(config.Color, self.target) or Color3.new(1,1,1); label.Text = resolveValue(config.Text, self.target) or self.target.Name; local offset = resolveValue(config.Offset, self.target) or Vector3.new(0, primaryPart.Size.Y / 2 + 1.5, 0); billboard.StudsOffset = offset end end end
 
-	-- [[ ОБЩАЯ ЛОГИКА ДЛЯ 2D-ЭЛЕМЕНТОВ ]]
-	local head, root, headPos, rootPos, headOnScreen, rootOnScreen
-	if self.target:IsA("Model") then
-		head = self.target:FindFirstChild("Head")
-		root = self.target:FindFirstChild("HumanoidRootPart")
-		if head and root then
-			headPos, headOnScreen = camera:WorldToViewportPoint(head.Position)
-			rootPos, rootOnScreen = camera:WorldToViewportPoint(root.Position)
-		end
-	end
-
-	-- Box
-	local box = self.visuals.Box; if box then local config = self.options.Box; local isVisible = onScreen and headOnScreen and rootOnScreen and (resolveValue(config.Enabled, self.target) or false); box.Visible = isVisible; if isVisible then local height = math.abs(headPos.Y - rootPos.Y); local width = height * 0.6; local topLeft = Vector2.new(headPos.X - width / 2, headPos.Y); box.Position = UDim2.fromOffset(topLeft.X, topLeft.Y); box.Size = UDim2.fromOffset(width, height); local border = self.visuals.BoxBorder; border.Color = resolveValue(config.Color, self.target) or Color3.new(1,1,1); border.Thickness = resolveValue(config.Thickness, self.target) or 1; else box.Visible = false end end
-	
-	-- [[ ИСПРАВЛЕНО ]] Полностью новая, математически корректная логика для Трассировщика
+	-- [[ ИЗМЕНЕНО ]] Логика обновления Tracer полностью заменена на логику из твоего примера
 	local tracer = self.visuals.Tracer
 	if tracer then
 		local config = self.options.Tracer
-		-- Трассировщик видим, только если HumanoidRootPart виден на экране
-		local isVisible = rootOnScreen and (resolveValue(config.Enabled, self.target) or false)
-		tracer.Visible = isVisible
-		if isVisible then
-			-- Начальная точка (откуда рисуем линию)
-			local fromPoint = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y)
-			local fromType = resolveValue(config.From, self.target)
-			if fromType == "Mouse" then fromPoint = game:GetService("UserInputService"):GetMouseLocation() 
-			elseif fromType == "Center" then fromPoint = camera.ViewportSize / 2 end
+		local isVisible = resolveValue(config.Enabled, self.target) or false
+		
+		if not isVisible then
+			tracer.Visible = false
+			return
+		end
 
-			-- Конечная точка - это позиция ног на экране (rootPos)
-			local targetPoint = Vector2.new(rootPos.X, rootPos.Y)
-			
-			local delta = targetPoint - fromPoint
-			local distance = delta.Magnitude
-			
-			-- Позиционируем центр линии точно между начальной и конечной точками
-			tracer.Position = UDim2.fromOffset((fromPoint.X + targetPoint.X) / 2, (fromPoint.Y + targetPoint.Y) / 2)
-			tracer.Size = UDim2.fromOffset(distance, resolveValue(config.Thickness, self.target) or 1)
-			-- Правильный расчет угла для повернутого на 90 градусов фрейма
-			tracer.Rotation = math.deg(math.atan2(delta.Y, delta.X)) + 90
-			
-			tracer.BackgroundColor3 = resolveValue(config.Color, self.target) or Color3.new(1,1,1)
+		local targetPosition
+		local targetType = resolveValue(config.Target, self.target) or "Head"
+		
+		if targetType == "Head" and self.target:FindFirstChild("Head") then
+			targetPosition = self.target.Head.Position
+		elseif targetType == "Torso" and self.target:FindFirstChild("HumanoidRootPart") then
+			targetPosition = self.target.HumanoidRootPart.Position
+		elseif targetType == "Feet" and self.target:FindFirstChild("HumanoidRootPart") then
+			local hrp = self.target.HumanoidRootPart
+			targetPosition = (hrp.CFrame * CFrame.new(0, -hrp.Size.Y / 2, 0)).Position
+		else
+			targetPosition = primaryPart.Position -- Запасной вариант
+		end
+
+		if not targetPosition then
+			tracer.Visible = false
+			return
+		end
+
+		local vector, onScreenTarget = camera:WorldToViewportPoint(targetPosition)
+		tracer.Visible = onScreenTarget
+		
+		if onScreenTarget then
+			tracer.Color = resolveValue(config.Color, self.target) or Color3.new(1,1,1)
+			tracer.Thickness = resolveValue(config.Thickness, self.target) or 1
+			tracer.Transparency = resolveValue(config.Transparency, self.target) or 0
+			tracer.To = Vector2.new(vector.X, vector.Y)
+
+			local fromType = resolveValue(config.From, self.target) or "Center"
+			if fromType == "Mouse" then
+				tracer.From = game:GetService("UserInputService"):GetMouseLocation()
+			elseif fromType == "Bottom" then
+				tracer.From = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y)
+			else -- Center
+				tracer.From = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y / 2)
+			end
 		end
 	end
 end
